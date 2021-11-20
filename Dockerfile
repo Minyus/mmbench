@@ -42,6 +42,7 @@ RUN pip --no-cache-dir install \
 RUN pip --no-cache-dir install \
     mmcls \
     mmdet \
+    timm \
     onnx \
     onnxruntime \
     onnx-simplifier \
