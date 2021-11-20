@@ -1,0 +1,15 @@
+version: "3"
+services:
+  mm:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mm:v1
+    container_name: mm
+    environment: []
+    entrypoint: /bin/sh
+    tty: true
+    volumes:
+      - ../:/workspace
+    network_mode: host
+    shm_size: 30gb
