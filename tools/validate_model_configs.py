@@ -16,14 +16,14 @@ def validate_model_configs(
 
     for p in Path().glob(config_path):
         cfg = Config.fromfile(str(p))
-        self = CLASSIFIERS.build(cfg=dict(cfg["model"]))
+        model = CLASSIFIERS.build(cfg=dict(cfg["model"]))
+        model.eval()
 
-        self.eval()
         inp = torch.rand(batch_size, channel_size, height, width)
 
         _time_begin = time.time()
         for _ in range(n_batches):
-            outputs = self.forward(inp, return_loss=False, img_metas=None)
+            outputs = model.forward(inp, return_loss=False, img_metas=None)
         _time_end = time.time()
         _time = _time_end - _time_begin
         _time_per_batch = _time / n_batches
