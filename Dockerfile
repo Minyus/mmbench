@@ -12,8 +12,10 @@ RUN apt-get --allow-releaseinfo-change update \
     curl \
     ffmpeg \
     git \
+    graphviz \
     htop \
     jq \
+    libgraphviz-dev \
     ncdu \
     net-tools \
     openssh-server \
@@ -53,6 +55,10 @@ RUN pip --no-cache-dir install \
     pandas \
     scikit-learn \
     plotly \
+    flatten-dict \
+    nested-lookup \
+    pydot \
+    networkx \
     xonsh[full] \
     pipdeptree \
     black \
