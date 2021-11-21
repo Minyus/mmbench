@@ -4,6 +4,8 @@ import torch
 from mmcv import Config
 from mmcls.models import CLASSIFIERS
 
+from deployment.pytorch2onnx import pytorch2onnx
+
 
 def validate_model_configs(
     config_path="configs/_base_/models/*.py",
@@ -12,6 +14,7 @@ def validate_model_configs(
     channel_size=3,
     height=224,
     width=224,
+    to_onnx=True,
 ):
 
     for p in Path().glob(config_path):
@@ -31,6 +34,18 @@ def validate_model_configs(
         print(
             f"Config: {p.stem: <30} | Time per batch (sec): {_time_per_batch: .6f} | Output shape: {outputs[0].shape}"
         )
+
+        if to_onnx:
+            pytorch2onnx(
+                model=model,
+                input_shape=(batch_size, channel_size, height, width),
+                opset_version=11,
+                dynamic_export=False,
+                show=False,
+                output_file=f"onnx/{p.stem}.onnx",
+                do_simplify=False,
+                verify=False,
+            )
 
 
 if __name__ == "__main__":
