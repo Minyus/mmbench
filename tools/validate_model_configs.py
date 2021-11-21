@@ -57,7 +57,7 @@ def validate_model_configs(
                 pydot_graph = GetPydotGraph(
                     onnx_msg.graph,
                     name=onnx_msg.graph.name,
-                    rankdir="LR",
+                    rankdir="TB",  # "TB": Top to Bottom, "LR": Left to Right
                     node_producer=GetOpNodeProducer(embed_docstring=True, **OP_STYLE),
                 )
                 pydot_graph.write_dot(dot_path)
