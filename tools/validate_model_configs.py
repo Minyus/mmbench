@@ -2,7 +2,7 @@ from pathlib import Path
 import time
 import torch
 from mmcv import Config
-from mmcls.models import CLASSIFIERS
+from mmcls.models import build_classifier
 
 import onnx
 from deployment.pytorch2onnx import pytorch2onnx
@@ -22,7 +22,9 @@ def validate_model_configs(
 
     for p in Path().glob(config_path):
         cfg = Config.fromfile(str(p))
-        model = CLASSIFIERS.build(cfg=dict(cfg["model"]))
+        cfg.model.pretrained = None
+        model = build_classifier(cfg.model)
+
         model.eval()
 
         inp = torch.rand(batch_size, channel_size, height, width)
