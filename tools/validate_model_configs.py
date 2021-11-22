@@ -7,6 +7,7 @@ from mmcls.models import build_classifier
 import onnx
 from deployment.pytorch2onnx import pytorch2onnx
 from deployment.net_drawer import GetPydotGraph, GetOpNodeProducer, OP_STYLE
+from proc_run.proc_run import proc_run
 
 
 def validate_model_configs(
@@ -18,6 +19,7 @@ def validate_model_configs(
     width=224,
     to_onnx=True,
     to_dot=True,
+    to_svg=True,
 ):
 
     for p in Path().glob(config_path):
@@ -64,6 +66,10 @@ def validate_model_configs(
                 )
                 pydot_graph.write_dot(dot_path)
                 print(f"Successfully exported DOT: {dot_path}")
+
+                if to_svg:
+                    svg_path = f"onnx/{p.stem}.svg"
+                    proc_run(["dot", "-Tsvg", dot_path, "-o", svg_path])
 
 
 if __name__ == "__main__":
