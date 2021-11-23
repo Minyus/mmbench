@@ -52,6 +52,8 @@ RUN pip --no-cache-dir install \
 && true
 
 RUN pip --no-cache-dir install \
+    future \
+    tensorboard \
     pandas \
     scikit-learn \
     plotly \
