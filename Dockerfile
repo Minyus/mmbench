@@ -44,27 +44,30 @@ RUN pip --no-cache-dir install \
 RUN pip --no-cache-dir install \
     mmcls \
     mmdet \
-    timm \
-    onnx \
-    onnxruntime \
-    onnx-simplifier \
-    torchinfo \
 && true
 
 RUN pip --no-cache-dir install \
+    onnx \
+    onnxruntime \
+    onnx-simplifier \
+    timm \
     future \
     tensorboard \
+&& true
+
+RUN pip --no-cache-dir install \
+    pydot \
+    torchinfo \
+    black \
+    isort \
+    flake8 \
     pandas \
     scikit-learn \
     plotly \
     flatten-dict \
     nested-lookup \
-    pydot \
     networkx \
-    xonsh[full] \
     pipdeptree \
-    black \
-    isort \
-    flake8 \
     pyinstrument \
+    xonsh[full] \
     && true
