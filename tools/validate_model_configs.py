@@ -4,33 +4,46 @@ import torch
 from mmcv import Config
 from mmcls.models import build_classifier
 
-import onnx
-from deployment.pytorch2onnx import pytorch2onnx
-from deployment.net_drawer import GetPydotGraph, GetOpNodeProducer, OP_STYLE
-from proc_run.proc_run import proc_run
-
 
 def validate_model_configs(
     config_path="configs/_base_/models/*.py",
     n_batches=1,
     batch_size=1,
-    channel_size=3,
-    height=224,
-    width=224,
-    to_onnx=True,
-    to_dot=True,
-    to_svg=True,
+    to_onnx=False,
+    to_dot=False,
+    to_svg=False,
 ):
+    if to_onnx:
+        import onnx
+        from deployment.pytorch2onnx import pytorch2onnx
+    if to_dot:
+        from deployment.net_drawer import GetPydotGraph, GetOpNodeProducer, OP_STYLE
+    if to_svg:
+        from proc_run.proc_run import proc_run
 
-    for p in Path().glob(config_path):
-        print(p)
+    path_ls = sorted([str(p) for p in Path().glob(config_path)])
+
+    for path in path_ls:
+        p = Path(path)
         cfg = Config.fromfile(str(p))
         cfg.model.pretrained = None
         model = build_classifier(cfg.model)
 
         model.eval()
 
-        inp = torch.rand(batch_size, channel_size, height, width)
+        input_size = model.backbone.timm_model.default_cfg.get(
+            "input_size", (3, 224, 224)
+        )
+
+        if max(input_size[1:]) > 456:
+            print(f"Big input size {input_size} was clipped.")
+            input_size = (input_size[0], 456, 456)
+
+        input_shape = (batch_size, *input_size)
+
+        # print(f"Config: {p.stem: <30} | Input shape: {input_shape}")
+
+        inp = torch.randn(input_shape)
 
         _time_begin = time.time()
         for _ in range(n_batches):
@@ -40,14 +53,14 @@ def validate_model_configs(
         _time_per_batch = _time / n_batches
 
         print(
-            f"Config: {p.stem: <30} | Time per batch (sec): {_time_per_batch: .6f} | Output shape: {outputs[0].shape}"
+            f"Config: {p.stem: <30} | Time per batch (sec): {_time_per_batch: .6f} | Input shape: {input_shape} | Output shape: {outputs[0].shape}"
         )
 
         if to_onnx:
             onnx_path = f"onnx/{p.stem}.onnx"
             pytorch2onnx(
                 model=model,
-                input_shape=(batch_size, channel_size, height, width),
+                input_shape=input_shape,
                 opset_version=11,
                 dynamic_export=False,
                 show=False,
