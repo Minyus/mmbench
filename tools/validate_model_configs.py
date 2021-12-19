@@ -23,6 +23,7 @@ def validate_model_configs(
 ):
 
     for p in Path().glob(config_path):
+        print(p)
         cfg = Config.fromfile(str(p))
         cfg.model.pretrained = None
         model = build_classifier(cfg.model)
