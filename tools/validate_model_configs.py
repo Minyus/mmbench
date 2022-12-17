@@ -15,6 +15,11 @@ def validate_model_configs(
     to_onnx=False,
     to_dot=False,
     to_svg=False,
+    show=None,
+    verify=None,
+    opset_version=None,
+    simplify=None,
+    dynamic_export=None,
 ):
     if to_svg:
         from proc_run.proc_run import proc_run
@@ -89,16 +94,17 @@ def validate_model_configs(
         )
 
         if to_onnx:
+            model = build_classifier(cfg.model)
             onnx_path = f"onnx/{p.stem}.onnx"
             pytorch2onnx(
                 model=model,
                 input_shape=input_shape,
-                opset_version=11,
-                dynamic_export=False,
-                show=False,
+                opset_version=opset_version,
+                dynamic_export=dynamic_export,
+                show=show,
                 output_file=onnx_path,
-                do_simplify=False,
-                verify=False,
+                do_simplify=simplify,
+                verify=verify,
             )
 
             if to_dot:
@@ -151,6 +157,18 @@ if __name__ == "__main__":
     parser.add_argument(
         "-s", "--svg", action="store_true", help="Generate SVG from Dot"
     )
+    parser.add_argument("--show", action="store_true", help="show onnx graph")
+    parser.add_argument("--verify", action="store_true", help="verify the onnx model")
+    parser.add_argument("--opset-version", type=int, default=11)
+    parser.add_argument(
+        "--simplify", action="store_true", help="Whether to simplify onnx model."
+    )
+    parser.add_argument(
+        "--dynamic-export",
+        action="store_true",
+        help="Whether to export ONNX with dynamic input shape. \
+            Defaults to False.",
+    )
     args = parser.parse_args()
 
     validate_model_configs(
@@ -162,4 +180,9 @@ if __name__ == "__main__":
         args.onnx,
         args.dot,
         args.svg,
+        args.show,
+        args.verify,
+        args.opset_version,
+        args.simplify,
+        args.dynamic_export,
     )
