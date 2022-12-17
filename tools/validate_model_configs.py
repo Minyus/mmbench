@@ -72,8 +72,12 @@ def validate_model_configs(
         _time = _time_end - _time_begin
         _time_per_batch = _time / n_batches
 
+        if isinstance(outputs, (tuple, list)):
+            output_shapes = [output.shape for output in outputs]
+        else:
+            output_shapes = outputs.shape
         print(
-            f"Config: {p.stem: <30} | Time per batch (sec): {_time_per_batch: .6f} | Input shape: {input_shape} | Output shape: {outputs[0].shape}"
+            f"Config: {p.stem: <30} | Time per batch (sec): {_time_per_batch: .6f} | Input: {inp.shape} | Outputs: {output_shapes}"
         )
 
         if to_onnx:
