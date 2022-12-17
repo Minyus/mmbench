@@ -82,7 +82,7 @@ def validate_model_configs(
             f" | Batch duration (sec): {_time_per_batch: .6f}"
         )
 
-        if to_onnx:
+        if to_onnx or to_dot or to_svg:
             onnx_path = f"onnx/{p.stem}.onnx"
             pytorch2onnx(
                 model=model,
@@ -95,7 +95,7 @@ def validate_model_configs(
                 verify=False,
             )
 
-            if to_dot:
+            if to_dot or to_svg:
                 dot_path = f"onnx/{p.stem}.dot"
                 onnx_msg = onnx.load(onnx_path)
                 pydot_graph = GetPydotGraph(
