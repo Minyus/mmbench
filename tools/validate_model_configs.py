@@ -1,3 +1,4 @@
+import argparse
 from pathlib import Path
 import time
 import torch
@@ -7,6 +8,7 @@ from mmcls.models import build_classifier
 
 def validate_model_configs(
     config_path="configs/_base_/models/*.py",
+    top=False,
     n_batches=1,
     batch_size=1,
     to_onnx=False,
@@ -47,7 +49,10 @@ def validate_model_configs(
 
         _time_begin = time.time()
         for _ in range(n_batches):
-            outputs = model.forward(inp, return_loss=False, img_metas=None)
+            if top:
+                outputs = model.forward(inp, return_loss=False, img_metas=None)
+            else:
+                outputs = model.backbone(inp)
         _time_end = time.time()
         _time = _time_end - _time_begin
         _time_per_batch = _time / n_batches
@@ -87,4 +92,39 @@ def validate_model_configs(
 
 
 if __name__ == "__main__":
-    validate_model_configs()
+    parser = argparse.ArgumentParser(
+        description="Validate mmcls model configs",
+    )
+    parser.add_argument("config", help="model config file path")
+    parser.add_argument(
+        "-t",
+        "--top",
+        action="store_true",
+        help="Include neck and head",
+    )
+    parser.add_argument(
+        "-n", "--n-iter", type=int, default=1, help="how many times to iterate"
+    )
+    parser.add_argument(
+        "-b", "--batch-size", type=int, default=1, help="how many samples in each batch"
+    )
+    parser.add_argument(
+        "-o", "--onnx", action="store_true", help="Generate ONNX from Pytorch"
+    )
+    parser.add_argument(
+        "-d", "--dot", action="store_true", help="Generate Dot from ONNX"
+    )
+    parser.add_argument(
+        "-s", "--svg", action="store_true", help="Generate SVG from Dot"
+    )
+    args = parser.parse_args()
+
+    validate_model_configs(
+        args.config,
+        args.top,
+        args.n_iter,
+        args.batch_size,
+        args.onnx,
+        args.dot,
+        args.svg,
+    )
