@@ -16,13 +16,19 @@ def validate_model_configs(
     to_dot=False,
     to_svg=False,
 ):
+    if to_svg:
+        from proc_run.proc_run import proc_run
+
+        to_dot = True
+
+    if to_dot:
+        from deployment.net_drawer import GetPydotGraph, GetOpNodeProducer, OP_STYLE
+
+        to_onnx = True
+
     if to_onnx:
         import onnx
         from deployment.pytorch2onnx import pytorch2onnx
-    if to_dot:
-        from deployment.net_drawer import GetPydotGraph, GetOpNodeProducer, OP_STYLE
-    if to_svg:
-        from proc_run.proc_run import proc_run
 
     if config_path.startswith("http"):
         from proc_run.proc_run import proc_run
@@ -82,7 +88,7 @@ def validate_model_configs(
             f" | Batch duration (sec): {_time_per_batch: .6f}"
         )
 
-        if to_onnx or to_dot or to_svg:
+        if to_onnx:
             onnx_path = f"onnx/{p.stem}.onnx"
             pytorch2onnx(
                 model=model,
@@ -95,7 +101,7 @@ def validate_model_configs(
                 verify=False,
             )
 
-            if to_dot or to_svg:
+            if to_dot:
                 dot_path = f"onnx/{p.stem}.dot"
                 onnx_msg = onnx.load(onnx_path)
                 pydot_graph = GetPydotGraph(
