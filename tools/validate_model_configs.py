@@ -11,6 +11,7 @@ def validate_model_configs(
     top=False,
     n_batches=1,
     batch_size=1,
+    input_size=None,
     to_onnx=False,
     to_dot=False,
     to_svg=False,
@@ -23,7 +24,15 @@ def validate_model_configs(
     if to_svg:
         from proc_run.proc_run import proc_run
 
-    path_ls = sorted([str(p) for p in Path().glob(config_path)])
+    if config_path.startswith("http"):
+        from proc_run.proc_run import proc_run
+
+        config_name = Path(config_path).name
+        tmp_path = "/tmp/" + config_name
+        proc_run(["wget", config_path, "-O", tmp_path])
+        path_ls = [tmp_path]
+    else:
+        path_ls = sorted([str(p) for p in Path().glob(config_path)])
 
     for path in path_ls:
         p = Path(path)
@@ -33,9 +42,15 @@ def validate_model_configs(
 
         model.eval()
 
-        input_size = model.backbone.timm_model.default_cfg.get(
-            "input_size", (3, 224, 224)
-        )
+        if input_size is None:
+            if hasattr(model.backbone, "timm_model"):
+                input_size = model.backbone.timm_model.default_cfg.get(
+                    "input_size", (3, 224, 224)
+                )
+            else:
+                input_size = (3, 224, 224)
+        elif isinstance(input_size, int):
+            input_size = (3, input_size, input_size)
 
         if max(input_size[1:]) > 456:
             print(f"Big input size {input_size} was clipped.")
@@ -109,6 +124,13 @@ if __name__ == "__main__":
         "-b", "--batch-size", type=int, default=1, help="how many samples in each batch"
     )
     parser.add_argument(
+        "-i",
+        "--input-size",
+        type=int,
+        default=None,
+        help="input image width and height",
+    )
+    parser.add_argument(
         "-o", "--onnx", action="store_true", help="Generate ONNX from Pytorch"
     )
     parser.add_argument(
@@ -124,6 +146,7 @@ if __name__ == "__main__":
         args.top,
         args.n_iter,
         args.batch_size,
+        args.input_size,
         args.onnx,
         args.dot,
         args.svg,
