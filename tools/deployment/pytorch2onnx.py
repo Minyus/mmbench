@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
+import warnings
 from functools import partial
 
 import mmcv
@@ -108,30 +109,16 @@ def pytorch2onnx(model,
     model.forward = origin_forward
 
     if do_simplify:
-        from mmcv import digit_version
-        import onnxsim
         import onnx
+        import onnxsim
+        from mmcv import digit_version
 
-        min_required_version = '0.3.0'
-        assert digit_version(mmcv.__version__) >= digit_version(
+        min_required_version = '0.4.0'
+        assert digit_version(onnxsim.__version__) >= digit_version(
             min_required_version
-        ), f'Requires to install onnx-simplify>={min_required_version}'
+        ), f'Requires to install onnxsim>={min_required_version}'
 
-        if dynamic_axes:
-            input_shape = (input_shape[0], input_shape[1], input_shape[2] * 2,
-                           input_shape[3] * 2)
-        else:
-            input_shape = (input_shape[0], input_shape[1], input_shape[2],
-                           input_shape[3])
-        imgs = _demo_mm_inputs(input_shape, model.head.num_classes).pop('imgs')
-        input_dic = {'input': imgs.detach().cpu().numpy()}
-        input_shape_dic = {'input': list(input_shape)}
-
-        model_opt, check_ok = onnxsim.simplify(
-            output_file,
-            input_shapes=input_shape_dic,
-            input_data=input_dic,
-            dynamic_input_shape=dynamic_export)
+        model_opt, check_ok = onnxsim.simplify(output_file)
         if check_ok:
             onnx.save(model_opt, output_file)
             print(f'Successfully simplified ONNX model: {output_file}')
@@ -231,3 +218,15 @@ if __name__ == '__main__':
         output_file=args.output_file,
         do_simplify=args.simplify,
         verify=args.verify)
+
+    # Following strings of text style are from colorama package
+    bright_style, reset_style = '\x1b[1m', '\x1b[0m'
+    red_text, blue_text = '\x1b[31m', '\x1b[34m'
+    white_background = '\x1b[107m'
+
+    msg = white_background + bright_style + red_text
+    msg += 'DeprecationWarning: This tool will be deprecated in future. '
+    msg += blue_text + 'Welcome to use the unified model deployment toolbox '
+    msg += 'MMDeploy: https://github.com/open-mmlab/mmdeploy'
+    msg += reset_style
+    warnings.warn(msg)
