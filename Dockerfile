@@ -33,17 +33,19 @@ RUN true \
     && conda install \
     pytorch=1.10.0 \
     torchvision=0.11.1 \
-    cudatoolkit=11.1 \
     -c pytorch -c nvidia -c conda-forge -y \
     && conda clean -ya
 
 RUN pip --no-cache-dir install \
-    mmcv-full==1.3.17 -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.10.0/index.html \
+    opencv-python-headless \
 && true
 
 RUN pip --no-cache-dir install \
-    mmcls \
-    mmdet \
+    mmcv-full==1.7.0 -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.10/index.html \
+&& true
+
+RUN pip --no-cache-dir install \
+    mmcls==0.25.0 \
 && true
 
 RUN pip --no-cache-dir install \
@@ -53,9 +55,6 @@ RUN pip --no-cache-dir install \
     timm \
     future \
     tensorboard \
-&& true
-
-RUN pip --no-cache-dir install \
     pydot \
     torchinfo \
     black \
@@ -66,8 +65,5 @@ RUN pip --no-cache-dir install \
     plotly \
     flatten-dict \
     nested-lookup \
-    networkx \
     pipdeptree \
-    pyinstrument \
-    xonsh[full] \
     && true
