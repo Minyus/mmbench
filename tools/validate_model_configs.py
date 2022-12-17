@@ -8,7 +8,7 @@ from mmcls.models import build_classifier
 
 def validate_model_configs(
     config_path="configs/_base_/models/*.py",
-    top=False,
+    whole_test=False,
     n_batches=1,
     batch_size=1,
     input_size=None,
@@ -64,7 +64,7 @@ def validate_model_configs(
 
         _time_begin = time.time()
         for _ in range(n_batches):
-            if top:
+            if whole_test:
                 outputs = model.forward(inp, return_loss=False, img_metas=None)
             else:
                 outputs = model.backbone(inp)
@@ -72,12 +72,14 @@ def validate_model_configs(
         _time = _time_end - _time_begin
         _time_per_batch = _time / n_batches
 
+        output_desc = "Outputs" if whole_test else "Backbone Outputs"
         if isinstance(outputs, (tuple, list)):
             output_shapes = [output.shape for output in outputs]
         else:
             output_shapes = outputs.shape
         print(
-            f"Config: {p.stem: <30} | Time per batch (sec): {_time_per_batch: .6f} | Input: {inp.shape} | Outputs: {output_shapes}"
+            f"Config: {p.stem: <30}  | Input: {inp.shape} | {output_desc}: {output_shapes}"
+            f" | Batch duration (sec): {_time_per_batch: .6f}"
         )
 
         if to_onnx:
@@ -116,23 +118,23 @@ if __name__ == "__main__":
     )
     parser.add_argument("config", help="model config file path")
     parser.add_argument(
-        "-t",
-        "--top",
+        "-w",
+        "--whole-test",
         action="store_true",
-        help="Include neck and head",
+        help="Test the whole model including neck and head",
     )
     parser.add_argument(
-        "-n", "--n-iter", type=int, default=1, help="how many times to iterate"
+        "-n", "--n-iter", type=int, default=1, help="How many times to iterate"
     )
     parser.add_argument(
-        "-b", "--batch-size", type=int, default=1, help="how many samples in each batch"
+        "-b", "--batch-size", type=int, default=1, help="How many samples in each batch"
     )
     parser.add_argument(
         "-i",
         "--input-size",
         type=int,
         default=None,
-        help="input image width and height",
+        help="Input image width and height",
     )
     parser.add_argument(
         "-o", "--onnx", action="store_true", help="Generate ONNX from Pytorch"
@@ -147,7 +149,7 @@ if __name__ == "__main__":
 
     validate_model_configs(
         args.config,
-        args.top,
+        args.whole_test,
         args.n_iter,
         args.batch_size,
         args.input_size,
