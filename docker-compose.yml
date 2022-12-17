@@ -11,5 +11,6 @@ services:
     tty: true
     volumes:
       - ../:/workspace
+    working_dir: /workspace
     network_mode: host
     shm_size: 30gb
