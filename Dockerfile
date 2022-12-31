@@ -49,6 +49,7 @@ RUN pip --no-cache-dir install \
 && true
 
 RUN pip --no-cache-dir install \
+    numpy>=1.24.1 \
     onnx \
     onnxruntime \
     onnx-simplifier \
