@@ -45,6 +45,8 @@ def validate_model_configs(
     else:
         path_ls = sorted([str(p) for p in Path().glob(config_path)])
 
+    assert path_ls, f"No file found: {config_path}"
+
     for path in path_ls:
         p = Path(path)
         cfg = Config.fromfile(str(p))
